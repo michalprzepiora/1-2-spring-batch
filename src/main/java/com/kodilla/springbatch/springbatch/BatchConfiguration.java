@@ -1,4 +1,4 @@
-package com.kodilla.springbatch.springBatch;
+package com.kodilla.springbatch.springbatch;
 
 import com.kodilla.springbatch.model.PersonAge;
 import com.kodilla.springbatch.model.PersonBirthDate;
@@ -26,6 +26,7 @@ import org.springframework.core.io.FileSystemResource;
 @Configuration
 @EnableBatchProcessing
 public class BatchConfiguration {
+    private static final int CHUNK_SIZE = 100;
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
 
@@ -78,13 +79,13 @@ public class BatchConfiguration {
     }
 
     @Bean
-    Step priceChange(
+    Step convertDateToAge(
             ItemReader<PersonBirthDate> reader,
             ItemProcessor<PersonBirthDate, PersonAge> processor,
             ItemWriter<PersonAge> writer) {
 
         return stepBuilderFactory.get("priceChange")
-                .<PersonBirthDate, PersonAge>chunk(50)
+                .<PersonBirthDate, PersonAge>chunk(CHUNK_SIZE)
                 .reader(reader)
                 .processor(processor)
                 .writer(writer)
@@ -92,7 +93,7 @@ public class BatchConfiguration {
     }
 
     @Bean
-    Job changePriceJob(Step priceChange) {
+    Job changeBirthDateToAgeJob(Step priceChange) {
         return jobBuilderFactory.get("changeBirthDateToAgeJob")
                 .incrementer(new RunIdIncrementer())
                 .flow(priceChange)
